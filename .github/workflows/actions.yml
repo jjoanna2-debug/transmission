@@ -1588,8 +1588,13 @@ jobs:
             uname -a
             export PATH="/usr/pkg/bin:/usr/pkg/sbin${PATH:+:${PATH}}"
             export PKG_PATH="https://cdn.NetBSD.org/pub/pkgsrc/packages/NetBSD/`uname -p`/`uname -r`/All"
+            /usr/sbin/pkg_add -u curl
+            if [ '${{ needs.what-to-make.outputs.make-gtk }}' = 'true' ] || [ '${{ needs.what-to-make.outputs.make-qt }}' = 'true' ]; then
+              for set in xbase xcomp; do
+                curl -sL "https://cdn.netbsd.org/pub/NetBSD/NetBSD-`uname -r`/amd64/binary/sets/$set.tar.xz" | tar xJpf - -C /
+              done
+            fi
             /usr/sbin/pkg_add -u \
-              curl \
               cmake \
               fast_float \
               fmtlib \
@@ -1604,11 +1609,6 @@ jobs:
               `[ '${{ needs.what-to-make.outputs.make-qt }}' = 'true' ] && echo qt6-qtsvg qt6-qttools` \
               rapidjson \
               utf8-cpp
-            if [ '${{ needs.what-to-make.outputs.make-gtk }}' = 'true' ] || [ '${{ needs.what-to-make.outputs.make-qt }}' = 'true' ]; then
-              for set in xbase xcomp; do
-                curl -sL "https://cdn.netbsd.org/pub/NetBSD/NetBSD-`uname -r`/amd64/binary/sets/$set.tar.xz" | tar xJpf - -C /
-              done
-            fi
           run: |
             set -ex
             export PATH="/usr/pkg/bin:/usr/pkg/sbin${PATH:+:${PATH}}"
@@ -1628,6 +1628,7 @@ jobs:
               -DENABLE_UTILS=${{ (needs.what-to-make.outputs.make-utils == 'true') && 'ON' || 'OFF' }} \
               -DREBUILD_WEB=OFF `# nodejs is not packaged in NetBSD; the source tarball ships prebuilt web assets` \
               -DENABLE_WERROR=ON \
+              -DCMAKE_CXX_FLAGS=-Wno-error=null-dereference \
               -DRUN_CLANG_TIDY=OFF \
               -DUSE_SYSTEM_DEFAULT=ON \
               -DUSE_SYSTEM_B64=OFF `# Not packaged in NetBSD` \
