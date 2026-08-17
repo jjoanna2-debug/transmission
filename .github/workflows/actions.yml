@@ -680,7 +680,28 @@ jobs:
       - name: Get Source
         uses: actions/checkout@v6
         with:
-          submodules: recursive
+          submodules: false
+      - name: Get Submodules
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          git submodule sync --recursive
+          if ($LASTEXITCODE -ne 0) {
+            exit $LASTEXITCODE
+          }
+          $attempts = 4
+          for ($attempt = 1; $attempt -le $attempts; $attempt++) {
+            git -c http.version=HTTP/1.1 -c submodule.fetchJobs=1 submodule update --init --recursive
+            $exitCode = $LASTEXITCODE
+            if ($exitCode -eq 0) {
+              exit 0
+            }
+            if ($attempt -eq $attempts) {
+              exit $exitCode
+            }
+            Write-Host "Submodule fetch failed on attempt $attempt; retrying."
+            Start-Sleep -Seconds ([int] (5 * [math]::Pow(2, $attempt - 1)))
+          }
       - name: Prepare Build Deps
         uses: ./.github/actions/prepare-deps-win32
         with:
