@@ -443,14 +443,14 @@ jobs:
           cmd /c "`"$Env:VCVARSALL`" $Env:VC_ARCH >nul && cmake $($CmakeArgs -join ' ')"
       - name: Make (Core)
         run: |
-          cmd /c "`"$Env:VCVARSALL`" $Env:VC_ARCH >nul && cmake --build obj --config Debug --target transmission" 2>&1 | tee makelog
+          cmd /c "`"$Env:VCVARSALL`" $Env:VC_ARCH >nul && cmake --build obj --config Debug --parallel 4 --target transmission" 2>&1 | tee makelog
       - name: Make (App)
         run: |
-          cmd /c "`"$Env:VCVARSALL`" $Env:VC_ARCH >nul && cmake --build obj --config Debug --target transmission-app" 2>&1 | tee -a makelog
+          cmd /c "`"$Env:VCVARSALL`" $Env:VC_ARCH >nul && cmake --build obj --config Debug --parallel 4 --target transmission-app" 2>&1 | tee -a makelog
       - name: Make (Tests)
         if: needs.what-to-make.outputs.make-tests == 'true'
         run: |
-          cmd /c "`"$Env:VCVARSALL`" $Env:VC_ARCH >nul && cmake --build obj --config Debug --target libtransmission-test" 2>&1 | tee -a makelog
+          cmd /c "`"$Env:VCVARSALL`" $Env:VC_ARCH >nul && cmake --build obj --config Debug --parallel 4 --target libtransmission-test" 2>&1 | tee -a makelog
       - name: Test for warnings
         run: |
           if (Select-String -Path makelog -Pattern 'warning:') { exit 1 }
