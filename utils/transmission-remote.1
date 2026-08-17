@@ -11,7 +11,7 @@ and
 .Bk -words
 .Nm
 .Op Ar host:port | host | port
-.Op Fl a Ar filenames-or-URLs
+.Op Fl a Ar filename-or-URL
 .Op Fl as
 .Op Fl AS
 .Op Fl asd Ar number
@@ -90,8 +90,9 @@ connects to the transmission session at localhost:9091.
 Other sessions can be controlled by specifying a different host and/or port.
 .Sh OPTIONS
 .Bl -tag -width Ds
-.It Fl a Fl -add Ar filenames-or-URLs
-Add torrents to transmission.
+.It Fl a Fl -add Ar filename-or-URL
+Add a torrent to transmission.
+Repeat this option to add more than one torrent.
 .It Fl b Fl -debug
 Enable debugging mode.
 .It Fl as Fl -alt-speed
@@ -418,11 +419,11 @@ $ transmission-remote \-tall \-\-start
 .Ed
 Add two torrents:
 .Bd -literal -offset indent
-$ transmission-remote \-a one.torrent two.torrent
+$ transmission-remote \-a one.torrent \-a two.torrent
 .Ed
 Add all torrents in ~/Desktop:
 .Bd -literal -offset indent
-$ transmission-remote \-a ~/Desktop/*torrent
+$ for torrent in ~/Desktop/*.torrent; do transmission-remote \-a "$torrent"; done
 .Ed
 Get detailed information on the torrent whose ID is '1':
 .Bd -literal -offset indent
