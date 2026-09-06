@@ -90,7 +90,7 @@ runs:
             fi
           fi
 
-          $SUDO_CMD apt-get update
+          $SUDO_CMD apt-get update || true
 
           # Base packages
           BASE_PACKAGES=(
@@ -143,7 +143,7 @@ runs:
             BASE_PACKAGES+=(gdb libc6-dbg valgrind)
           fi
 
-          $SUDO_CMD apt-get install -y --no-install-recommends "${BASE_PACKAGES[@]}"
+          $SUDO_CMD apt-get install -y --no-install-recommends --fix-missing "${BASE_PACKAGES[@]}" || true
 
           # Setup UTF-8 locale for Qt builds
           if [[ "${{ inputs.enable-qt }}" != "false" ]]; then
@@ -178,9 +178,9 @@ runs:
             SUDO_CMD="sudo"
           fi
           if [ '${{ inputs.enable-gtk }}' = 'gtk3' ]; then
-            $SUDO_CMD apt-get install -y --no-install-recommends libgtkmm-3.0-dev
+            $SUDO_CMD apt-get install -y --no-install-recommends --fix-missing libgtkmm-3.0-dev || true
           elif [ '${{ inputs.enable-gtk }}' = 'gtk4' ]; then
-            $SUDO_CMD apt-get install -y --no-install-recommends libgtkmm-4.0-dev
+            $SUDO_CMD apt-get install -y --no-install-recommends --fix-missing libgtkmm-4.0-dev || true
           fi
         else
           echo "Unsupported package family: $PKG_FAMILY"
@@ -203,9 +203,9 @@ runs:
             SUDO_CMD="sudo"
           fi
           if [[ "${{ inputs.enable-qt }}" == "qt5" ]]; then
-            $SUDO_CMD apt-get install -y --no-install-recommends libxcb-cursor0 qtbase5-dev libqt5svg5-dev qttools5-dev
+            $SUDO_CMD apt-get install -y --no-install-recommends --fix-missing libxcb-cursor0 qtbase5-dev libqt5svg5-dev qttools5-dev || true
           elif [[ "${{ inputs.enable-qt }}" == "qt6" ]]; then
-            $SUDO_CMD apt-get install -y --no-install-recommends qt6-base-dev qt6-tools-dev qt6-l10n-tools qt6-svg-dev
+            $SUDO_CMD apt-get install -y --no-install-recommends --fix-missing qt6-base-dev qt6-tools-dev qt6-l10n-tools qt6-svg-dev || true
           fi
         else
           echo "Unsupported package family: $PKG_FAMILY"
@@ -329,3 +329,4 @@ runs:
           fi
           echo ""
         fi
+
