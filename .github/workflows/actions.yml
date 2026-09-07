@@ -1119,7 +1119,7 @@ jobs:
             -DENABLE_GTK=OFF \
             -DENABLE_MAC=OFF \
             -DENABLE_QT=OFF \
-            -DENABLE_TESTS=OFF \
+            -DENABLE_TESTS=${{ needs.what-to-make.outputs.make-tests }} \
             -DENABLE_UTILS=ON \
             -DENABLE_UTP=OFF \
             -DREBUILD_WEB=OFF \
@@ -1135,8 +1135,6 @@ jobs:
         run: cmake --build obj --config RelWithDebInfo
       - name: Test
         if: ${{ needs.what-to-make.outputs.make-tests == 'true' }}
-        env:
-          TMPDIR: /private/tmp
         uses: ./.github/actions/run-tests
         with:
           build-dir: obj
@@ -1609,13 +1607,18 @@ jobs:
             uname -a
             export PATH="/usr/pkg/bin:/usr/pkg/sbin${PATH:+:${PATH}}"
             export PKG_PATH="https://cdn.NetBSD.org/pub/pkgsrc/packages/NetBSD/`uname -p`/`uname -r`/All"
-            /usr/sbin/pkg_add -u curl
+            # cairo, dbus, gtkmm4 and qt6-qtbase check for X11 shared libraries
+            # as they install, so the sets have to go in before pkg_add adds
+            # those packages.
+            # curl is added first because the sets are fetched with it.
             if [ '${{ needs.what-to-make.outputs.make-gtk }}' = 'true' ] || [ '${{ needs.what-to-make.outputs.make-qt }}' = 'true' ]; then
+              /usr/sbin/pkg_add -u curl
               for set in xbase xcomp; do
                 curl -sL "https://cdn.netbsd.org/pub/NetBSD/NetBSD-`uname -r`/amd64/binary/sets/$set.tar.xz" | tar xJpf - -C /
               done
             fi
             /usr/sbin/pkg_add -u \
+              curl \
               cmake \
               fast_float \
               fmtlib \
@@ -1649,7 +1652,6 @@ jobs:
               -DENABLE_UTILS=${{ (needs.what-to-make.outputs.make-utils == 'true') && 'ON' || 'OFF' }} \
               -DREBUILD_WEB=OFF `# nodejs is not packaged in NetBSD; the source tarball ships prebuilt web assets` \
               -DENABLE_WERROR=ON \
-              -DCMAKE_CXX_FLAGS=-Wno-error=null-dereference \
               -DRUN_CLANG_TIDY=OFF \
               -DUSE_SYSTEM_DEFAULT=ON \
               -DUSE_SYSTEM_B64=OFF `# Not packaged in NetBSD` \

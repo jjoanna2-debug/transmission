@@ -106,7 +106,9 @@ runs:
           fi
         fi
 
-        args=("--test-dir" "$build_dir" "-j" "$parallel" "--output-on-failure")
+        # --test-dir requires CTest 3.20; Debian 11 ships CTest 3.18.
+        # Run from the build directory and reject an empty test selection.
+        args=("-j" "$parallel" "--output-on-failure" "--no-tests=error")
         if [[ -n "$build_config" ]]; then
           args+=("--build-config" "$build_config")
         fi
@@ -125,9 +127,9 @@ runs:
 
         run_ctest() {
           if [[ "${OS_FAMILY:-}" == "linux" && "$enable_sanitizers" != "true" && "$use_catchsegv" == "true" ]] && command -v catchsegv >/dev/null 2>&1; then
-            catchsegv ctest "${args[@]}"
+            cmake -E chdir "$build_dir" catchsegv ctest "${args[@]}"
           else
-            ctest "${args[@]}"
+            cmake -E chdir "$build_dir" ctest "${args[@]}"
           fi
         }
 
